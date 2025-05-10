@@ -25,5 +25,5 @@ dist-ssr
 node_modules
 
 # Python virtual environment and bytecode
-backend/venv/
-backend/.venv/
+Backend/venv/
+Backend/.venv/
