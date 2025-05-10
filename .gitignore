@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 node_modules
+
+venv/
+.venv/
+__pycache__/
+*.pyc
