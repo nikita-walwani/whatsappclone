@@ -1,0 +1,316 @@
+i{
+    cursor: pointer;
+}
+
+.chat-screen-main i{
+    color: var(--third-color);
+}
+
+.chat-screen-main{
+    display: flex;
+}
+
+.left-bar {
+    width: 5%;
+    background: var(--detailing-color);
+    height: 100%;
+    position: fixed;
+    box-sizing: border-box;
+    padding: 10px 0;
+    left: 0;
+    border-right: 1px solid var(--underlines);
+}
+.profile-img{
+    width: 40px;
+    height: 40px;
+    background-color:var(--primary-color);
+    padding: 2px;
+    border:2px solid var(--third-color);
+    border-radius: 50%;
+
+}
+.left-bar i{
+    font-size: 100%;
+    
+}
+
+.left-bar button{
+    font-size: 24px;
+    display: block;
+    padding: 10px 0;
+    cursor: pointer;
+    background: none;
+    padding: 0;
+    margin: 10px 0;
+    border: none;
+    box-shadow: none;
+    width: 100%;
+}
+.left-bar a:hover{
+    background-color:var(--primary-color);
+}
+
+.left-bar nav {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-screen-header{
+    background-color:var(--detailing-color);
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+}
+.contact-header{
+    height: 50px;
+    background-color:var(--primary-color);
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    color: var(--dark-bg-text-color);
+}
+
+
+.mid-chat-screen{
+    width: 30%;
+    background-color: var(--primary-color);
+    margin-left: 6%;
+    height: 100vh;
+    border-right: 1px solid var(--underlines);
+    
+}
+
+.mid-chat-screen h3{
+ margin: 0;   
+}
+
+.show-main-screen{
+    width: 65%;
+    height: 100vh;
+    background-color: var(--detailing-color);
+    background: url("../images/message-doodles.jpg");
+}
+
+.show-list img{
+    width: auto;
+    padding: 5px;
+    height: 55px;
+
+}
+.show-list{
+    color: var(--dark-bg-text-color);
+    
+}
+.show-list ul{
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+.show-list li{
+    display: flex; 
+    background:var(--primary-color);
+    column-gap: 5px;
+    align-items: center;
+    cursor: pointer;
+    
+}
+
+.user-detail{
+    border-bottom: 1px solid var(--underlines);
+    width: 100%;
+    text-align: left;
+    
+}
+.user-detail p{
+    margin: 7px 0;
+}
+
+.last-media{
+    color: var(--third-color);
+}
+
+.chat-screen-container{
+    height: 100%;
+    width: 100%;
+    background:  var(--primary-color);
+    position: relative;
+   
+}
+
+.chat-container{
+    width: 100%;
+    height: 100%;
+    background: url("../images/message-doodles.png");
+    background-position: center;
+    background-size: contain;       
+   
+}
+
+.message-input{
+    height: 60px;
+    background-color:var(--detailing-color);
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.message-input a, .message-input button {
+    font-size: 24px;
+    padding: 10px 0;
+    cursor: pointer;
+    width: 24px;
+    background:none;
+    box-shadow: none;
+    border:none;
+}
+.message-area{
+    width: 80%;
+    background: #aebac1;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 10px;
+}
+
+.chat-screen-header img{
+    width: 50px;
+}
+
+.user-info-header{
+    padding: 10px;
+    display: flex;
+    align-items:center;
+    color: var(--dark-bg-text-color);
+    column-gap: 10px;
+}
+
+ul.chats-text{
+    color: white;
+    position: absolute;
+    bottom: 100px;
+    list-style-type: none;
+    width: 90%;
+    left: 50%;
+    transform: translate(-50%, -0);
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    overflow-y: scroll;
+    height: 80%;
+
+    
+}
+ul.chats-text div{
+    border-radius: 50%;
+    padding: 5px 20px;
+    width: 100%;
+    margin: 5px 0;
+}
+.sender-text{
+    text-align: right;
+}
+
+.receiver-text{
+    text-align: left;
+}
+
+.sender-text li{
+    background: var(--accent-color);   
+    display: inline-block;
+    padding: 10px 40px;
+    border-radius: 20px;
+    
+    
+}
+
+.receiver-text li{
+    background: var(--detailing-color);
+    display: inline;
+    padding: 10px 40px;
+    border-radius: 20px;
+}
+.chat-time{
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.profile-details-screen img.user-profile-image{
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    
+}
+
+.profile-details-screen {
+    color: white;
+    padding: 10px;
+}
+
+
+.show-default-screen{
+    width: 100%;
+    height: 100%;
+    background:var(--detailing-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    flex-direction: column;
+}
+
+
+.show-default-screen img{
+    width: 200px;
+}
+
+.fileMessage{
+    padding: 5px!important;
+    border-radius: 0!important;
+    color:white;
+}
+
+.edit-name, .edit-name:focus {
+    background: none;
+    border: none;
+    color: var(--dark-bg-text-color);
+    border-bottom: 1px solid var(--detailing-color);
+    font-size: 18px;
+    box-shadow: none;
+    outline: none;
+}
+.edit-user-name, .save-user-name{
+    display: flex;
+    justify-content: center;
+    column-gap: 10px;
+    align-items: center;
+}
+
+.save-user-name input{
+    margin:16px 0;
+}
+
+.edit-profile-button{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-profile-button button{
+    background:var(--accent-color);
+    border:none;
+    color:white;
+    cursor: pointer;
+    padding:8px 30px;
+    border-radius:4px;
+}

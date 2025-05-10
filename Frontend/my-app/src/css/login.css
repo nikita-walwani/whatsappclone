@@ -1,0 +1,122 @@
+body{
+
+    background-color:var(--primary-color);
+    margin: 0;
+    padding:0;
+}
+
+.login{
+    background:linear-gradient(0deg, #00f0ff, #00ecfb12);
+    box-shadow: 0 0px 11px rgb(0 231 246);
+    border-radius: 10px;
+    padding: 20px 40px;
+    width: 40%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    position: relative;
+
+}
+
+.login .chat-bg{
+    position: absolute;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    opacity: .2;
+}
+
+
+.login input{
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+.sign-up-button{
+    background: #021332;
+    width: 100%;
+    padding: 10px;  
+    font-size: 18px;
+    border-radius: 10px;
+    color: var(--dark-bg-text-color);
+    box-shadow: none;
+    border: none;
+    cursor: pointer;
+}
+.sign-up-button a{
+ text-decoration: none!important;
+ color: white;
+
+}
+
+.login-logo{
+
+    width: 250px;
+    
+}
+.pass-icon {
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.space-input{
+    margin-bottom: 5px;
+   
+
+}
+
+form{
+    width: 100%;
+}
+
+input[type="password"]{
+    padding-right: 100px;
+}
+
+
+
+@media (max-width: var(--xs)) {
+    .login {
+      width: 100%;
+      max-width: 0;
+    }
+  }
+  
+@media (min-width: var(--sm)) and (max-width: var(--md)) {
+    .login {
+        width: 100%;
+        max-width: 0;
+      }
+  }
+  
+@media (min-width: var(--md)) and (max-width: var(--lg)) {
+    .custom-class {
+      font-size: 16px;
+    }
+  }
+  
+@media (min-width: var(--lg)) and (max-width: var(--xl)) {
+    .custom-class {
+      font-size: 18px;
+    }
+}
+  
+  @media (min-width: var(--xl)) and (max-width: var(--xxl)) {
+    .custom-class {
+      font-size: 20px;
+    }
+}
+  
+@media (min-width: var(--xxl)) {
+    .custom-class {
+      font-size: 22px;
+    }
+  }

@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --primary-color: #00040b;   /* You can change this based on user */
+    --accent-color: #2cc1ff;
+    --text-color: #FFFFFF;
+    --detailing-color:#2b2e34;
+  }
+body {
+    font-family: 'Inter', sans-serif;
+  }

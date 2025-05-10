@@ -1,0 +1,13 @@
+body{
+    color: var(--light-bg-text-color);
+    box-sizing: border-box;
+}
+* {
+    box-sizing: border-box;
+  }
+html, body {
+    margin: 0;
+    padding: 0;
+    height: auto; /* Let content dictate the height */
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}

@@ -1,0 +1,78 @@
+#root {
+  /*padding: 2rem;*/
+  text-align: center;
+}
+:root {
+  --primary-color: #00040b;   /* You can change this based on user */
+  --accent-color: #2cc1ff;
+  --dark-bg-text-color: #FFFFFF;
+  --light-bg-text-color: #000000;
+  --detailing-color: #2b2e34;
+  --third-color:#aebac1;
+  --underlines:#515151;
+  --xs: 575.98px; /* Extra Small Screen */
+  --sm: 767.98px; /* Small Screen */
+  --md: 991.98px; /* Medium Screen */
+  --lg: 1199.98px; /* Large Screen */
+  --xl: 1399.98px; /* Extra Large Screen */
+  --xxl: 1400px;   /* Extra Extra Large Screen */
+
+}
+::-webkit-scrollbar {
+  width: 8px; /* Set width of scrollbar */
+}
+
+/* Style for the scrollbar thumb (the draggable part) */
+::-webkit-scrollbar-thumb {
+  background-color: var(--detailing-color); /* Set color of the thumb */
+  border-radius: 10px; /* Round the corners */
+  opacity: 0; /* Initially hide the scrollbar thumb */
+  transition: opacity 0.3s ease; /* Add a smooth transition */
+}
+
+/* Show the scrollbar thumb when the user hovers over the scrollbar */
+::-webkit-scrollbar:hover {
+  opacity: 1; /* Make the scrollbar thumb visible on hover */
+}
+
+/* Style for the scrollbar track on hover */
+::-webkit-scrollbar:hover::-webkit-scrollbar-thumb {
+  opacity: 1; /* Ensure visibility on hover */
+}
+
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}

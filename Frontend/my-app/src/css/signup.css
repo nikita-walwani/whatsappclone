@@ -1,0 +1,68 @@
+.signup{
+    background:linear-gradient(0deg, #00f0ff, #00ecfb12);
+    box-shadow: 0 0px 11px rgb(0 231 246);
+    border-radius: 10px;
+    padding: 20px 40px;
+    width: 40%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    position: relative;
+}
+.signup .chat-bg{
+    position: absolute;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    opacity: .2;
+}
+
+.signup input, .signup input:focus{
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+.login-up-button{
+    background: #021332;
+    width: 100%;
+    padding: 10px;  
+    font-size: 18px;
+    border-radius: 10px;
+    color: var(--dark-bg-text-color);
+    box-shadow: none;
+    border: none;
+    cursor: pointer;
+}
+
+.signup img{
+
+    width: 100px;
+    
+}
+
+.pass-icon {
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.space-input{
+    margin-bottom: 5px;
+   
+
+}
+
+form{
+    width: 100%;
+}
+
+input[type="password"]{
+    padding-right: 100px;
+}
