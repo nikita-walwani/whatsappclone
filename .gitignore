@@ -24,7 +24,6 @@ dist-ssr
 *.sw?
 node_modules
 
-venv/
-.venv/
-__pycache__/
-*.pyc
+# Python virtual environment and bytecode
+backend/venv/
+backend/.venv/
