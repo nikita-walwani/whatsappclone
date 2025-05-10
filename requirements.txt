@@ -118,6 +118,7 @@ python-jose==3.3.0
 python-multipart==0.0.20
 pyttsx3==2.91
 pytz==2024.1
+pywin32==310
 pyzmq==26.0.3
 realtime==2.0.1
 referencing==0.35.1
