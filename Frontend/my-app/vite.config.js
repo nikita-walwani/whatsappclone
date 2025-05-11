@@ -1,15 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
-  base: '/', // Required to ensure correct asset paths in production
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   build: {
-    outDir: 'dist', // default is fine, but you can specify explicitly
+    outDir: 'dist',
   },
   server: {
-    fs: {
-      strict: false,
-    }
-  }
+    port: 5173,
+  },
+  // 👇 this is the key fix
+  base: '/',
 });
