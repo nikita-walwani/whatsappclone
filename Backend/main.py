@@ -1,8 +1,8 @@
 import time
 from fastapi import FastAPI, Form, HTTPException, Depends, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from Backend.schemas  import UserCreate, UserLogin, Token, TokenWithUsers, EditUser
-from Backend.database import user_collection, media_collection
+from schemas  import UserCreate, UserLogin, Token, TokenWithUsers, EditUser
+from database import user_collection, media_collection
 from auth import decode_access_token, hash_password, verify_password, create_access_token
 from bson.objectid import ObjectId
 from fastapi.middleware.cors import CORSMiddleware
