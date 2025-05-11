@@ -11,7 +11,7 @@ import SendMedia from "./sendMedia";
 import { getMediaCategoryFromMime } from './findMediaByMime'
 import UploadImage from "./uploadEditImage"
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
 
 
@@ -187,7 +187,7 @@ export default function Chat(){
     const sender = { id:  currentUser?.id }; // Replace with actual sender id
 
     // Create a new WebSocket connection with the selected receiver
-    socket.current = new WebSocket(`ws://localhost:8000/ws/chat/${sender.id}/${receiver.id}`);
+    socket.current = new WebSocket(`${API_URL}/ws/chat/${sender.id}/${receiver.id}`);
 
     socket.current.onopen = () => {
       setIsConnected(true);

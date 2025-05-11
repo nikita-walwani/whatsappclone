@@ -6,7 +6,7 @@ import bg from "../images/chat-bg.jpg"
 import { FaEye, FaEyeSlash } from 'react-icons/fa'; 
 
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
 export default function Login() {
 
