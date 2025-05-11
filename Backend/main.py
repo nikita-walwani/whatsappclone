@@ -187,7 +187,7 @@ async def upload_media( user_id: str = Form(...),
     with open(path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    url = f"{os.getenv('VITE_API_URL')}{path}" 
+    url = f"{os.getenv('VITE_BACKEND_BASE_URL')}/{path}" 
    
     media_doc = {
         "user_id": user_id,
