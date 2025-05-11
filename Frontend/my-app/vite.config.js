@@ -6,15 +6,14 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, './src'), // ✅ nice alias setup
     },
   },
   build: {
-    outDir: 'dist',
+    outDir: 'dist', // ✅ correct, will generate into 'dist' directory
   },
   server: {
-    port: 5173,
+    port: 5173, // ✅ local dev port (Render ignores this)
   },
-  // 👇 this is the key fix
-  base: '/',
+  base: './', // ✅ this is essential for correct asset linking on production
 });
