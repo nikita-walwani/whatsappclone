@@ -23,7 +23,13 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Determine the base directory of the current script
+base_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Construct the path to the 'static' directory
+static_dir = os.path.join(base_dir, "static")
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 os.makedirs("static/media", exist_ok=True)
 
