@@ -1,5 +1,9 @@
 {
-  "routes": {
-    "/**": "index.html"
-  }
+  "public": "dist",
+  "rewrites": [
+    {
+      "source": "/**",
+      "destination": "/index.html"
+    }
+  ]
 }
