@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import "../css/signup.css"
+import "../css/signup.scss"
 import "../css/style.css"
 import enter from "../images/enter.png"
 import bg from "../images/chat-bg.jpg"
@@ -61,7 +61,7 @@ export default function Signup() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md signup">
         <img src={bg} className='chat-bg'></img>
-        <img src={enter}></img>
+        <img src={enter} className='sign-icon'></img>
         <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className='space-input'>
@@ -84,7 +84,7 @@ export default function Signup() {
             className="w-full p-3 mb-4 border border-gray-300 rounded-md"
           />
           </div>
-          <div className='relative mb-4 space-input'>
+          <div className='relative mb-4 space-input pass-input'>
           <input 
             name="password"
             type={showPassword ? "text" : "password"}
@@ -94,7 +94,7 @@ export default function Signup() {
             className="w-full p-3 border border-gray-300 rounded-md pr-10"
           />
            <span
-          className="absolute right-3 top-3 text-gray-500 cursor-pointer pass-icon"
+          className="absolute right-3 top-3 text-gray-500 cursor-pointer pass-icon password-eye"
           onClick={togglePassword}
         >
           {showPassword ? <FaEyeSlash /> : <FaEye />}

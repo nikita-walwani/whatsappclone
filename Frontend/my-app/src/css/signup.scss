@@ -1,16 +1,19 @@
+@use './variables' as *;
+
 .signup{
     background:linear-gradient(0deg, #00f0ff, #00ecfb12);
     box-shadow: 0 0px 11px rgb(0 231 246);
     border-radius: 10px;
     padding: 20px 40px;
     width: 40%;
-    margin: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 80vh;
-    position: relative;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 .signup .chat-bg{
     position: absolute;
@@ -26,6 +29,7 @@
     border: none;
     width: 100%;
     box-sizing: border-box;
+    margin-bottom: 10px;
 }
 
 
@@ -47,22 +51,33 @@
     
 }
 
-.pass-icon {
-    right: 5%;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.space-input{
-    margin-bottom: 5px;
-   
-
-}
-
 form{
     width: 100%;
 }
 
 input[type="password"]{
     padding-right: 100px;
+}
+
+
+.password-eye{
+  position: absolute;
+  top: 50%;
+  left: 90%;
+  transform: translateY(-50%);
+}
+
+.pass-input{
+  position: relative;
+}
+
+@media (max-width: #{ $sm - 1px }) {
+  .signup{
+    width: 100%;
+    height: 100%;
+    border-radius: 0%;
+  }
+  .sign-icon{
+    width: 70px!important;
+  }
 }

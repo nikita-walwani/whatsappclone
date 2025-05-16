@@ -1,3 +1,5 @@
+@use './variables' as *;
+
 body{
 
     background-color:var(--primary-color);
@@ -11,13 +13,14 @@ body{
     border-radius: 10px;
     padding: 20px 40px;
     width: 40%;
-    margin: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 80vh;
-    position: relative;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 
 }
 
@@ -36,6 +39,7 @@ body{
     border: none;
     width: 100%;
     box-sizing: border-box;
+    margin-bottom: 10px;
 }
 
 
@@ -61,17 +65,7 @@ body{
     width: 250px;
     
 }
-.pass-icon {
-    right: 5%;
-    top: 50%;
-    transform: translateY(-50%);
-}
 
-.space-input{
-    margin-bottom: 5px;
-   
-
-}
 
 form{
     width: 100%;
@@ -80,43 +74,24 @@ form{
 input[type="password"]{
     padding-right: 100px;
 }
-
-
-
-@media (max-width: var(--xs)) {
-    .login {
-      width: 100%;
-      max-width: 0;
-    }
-  }
-  
-@media (min-width: var(--sm)) and (max-width: var(--md)) {
-    .login {
-        width: 100%;
-        max-width: 0;
-      }
-  }
-  
-@media (min-width: var(--md)) and (max-width: var(--lg)) {
-    .custom-class {
-      font-size: 16px;
-    }
-  }
-  
-@media (min-width: var(--lg)) and (max-width: var(--xl)) {
-    .custom-class {
-      font-size: 18px;
-    }
+.password-eye{
+  position: absolute;
+  top: 50%;
+  left: 90%;
+  transform: translateY(-50%);
 }
-  
-  @media (min-width: var(--xl)) and (max-width: var(--xxl)) {
-    .custom-class {
-      font-size: 20px;
-    }
+
+.pass-input{
+  position: relative;
 }
-  
-@media (min-width: var(--xxl)) {
-    .custom-class {
-      font-size: 22px;
-    }
+
+@media (max-width: #{ $sm - 1px }) {
+  .login{
+    width: 100%;
+    height: 100%;
+    border-radius: 0%;
   }
+  .login-logo{
+    width: 100px!important;
+  }
+}

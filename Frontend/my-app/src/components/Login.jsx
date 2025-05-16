@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import "../css/login.css";
+import "../css/login.scss";
 import logo from '../images/login-screen-logo.png';
 import "../css/style.css";
 import bg from "../images/chat-bg.jpg"
@@ -72,7 +72,7 @@ export default function Login() {
             className="w-full p-3 mb-4 border border-gray-300 rounded-md"
           />
           </div>
-          <div className='relative mb-4 space-input'>
+          <div className='relative mb-4 space-input pass-input'>
           <input
             name='password'
             type="password"
@@ -83,7 +83,7 @@ export default function Login() {
             className="w-full p-3 border border-gray-300 rounded-md pr-10"
           />
            <span  
-                    className="absolute right-3 top-3 text-gray-500 cursor-pointer pass-icon"
+                    className="absolute password-eye"
                     onClick={togglePassword}
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}

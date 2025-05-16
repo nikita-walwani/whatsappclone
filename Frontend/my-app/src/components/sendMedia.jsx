@@ -15,7 +15,7 @@ export default function SendMedia({ sendMessage, handleClose}) {
 
   return (
    
-    <div style={{
+    <div className="media-popup-sm" style={{
       ...popUpStyle,
       transform: true ? 'translate(-50%, -50%) scale(1)' : 'translate(-50%, -50%) scale(0.8)',
       opacity: true ? 1 : 0,
@@ -42,7 +42,7 @@ export default function SendMedia({ sendMessage, handleClose}) {
       />
 
       {/* Video Upload */}
-      <label htmlFor="videoInput" style={{ cursor: 'pointer' }}>
+      {/* <label htmlFor="videoInput" style={{ cursor: 'pointer' }}>
         <img src={play} alt="Upload" style={imageStyle} />
       </label>
       <input
@@ -51,7 +51,7 @@ export default function SendMedia({ sendMessage, handleClose}) {
         id="videoInput"
         style={{ display: 'none' }}
         onChange={(e) => handleFileSelect(e.target.files[0])}
-      />
+      /> */}
 
       {/* Document Upload */}
       <label htmlFor="docInput" style={{ cursor: 'pointer' }}>
@@ -94,7 +94,7 @@ export default function SendMedia({ sendMessage, handleClose}) {
 // Base popup style
 const popUpStyle = {
   position: 'absolute',
-  left: '15%',
+  left: '18%',
   bottom: '0',
   background: 'white',
   boxShadow: '0 0 10px black',

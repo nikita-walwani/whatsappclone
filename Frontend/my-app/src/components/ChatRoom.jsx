@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import React, { useState } from "react";
-import "../css/chatRoom.css";
+import "../css/chatRoom.scss";
 import profile from "../images/profile.png"
 import doodles from "../images/message-doodles.png"
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,9 @@ import SpeechToText from "./speechToText";
 import SendMedia from "./sendMedia";
 import { getMediaCategoryFromMime } from './findMediaByMime'
 import UploadImage from "./uploadEditImage"
+import { breakpoints } from "../breakpoints";
+import SidebarMenu from "./menuForMobile";
+import { useMediaQuery } from 'react-responsive';
 
 const API_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
@@ -26,6 +29,17 @@ export default function Chat(){
     const [IseditUserName, setEditUserName] = useState(false)
     const [userNameOnEdit,  setUserNameOnEdit] = useState('')
     const [showUserList, setShowUsersList] =useState(true)
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const isMobile = useMediaQuery({ query: `(max-width: ${breakpoints.md}px)` });
+    const [showMenuItemsMobile, setMenuItemsForMobile] = useState(false)
+    const [isMainScreen, setMainScreen] = useState(false)
+    const [isUserListConatiner, setUserListContainer] = useState(true)
+    
+
+
+    const toggleMenuItemsForMobile=()=>{
+         setMenuItemsForMobile(!showMenuItemsMobile)
+    }
 
     const handleUploadMedia =(data)=>{
       let current_user = {
@@ -82,7 +96,6 @@ export default function Chat(){
     const [token, setToken] = useState("")
    
     const [selectedUser, setSelectedUser] = useState({});
-    const [isChatOpen, setIsChatOpen] = useState(false);
 
     const [showSendButton, setSendButton] = useState(false);
 
@@ -313,6 +326,7 @@ export default function Chat(){
       setIsChatOpen(true)
       const controller = new AbortController();
       const token = localStorage.getItem("access_token");
+      setIsChatOpen(false);
 
     
       fetch(`${API_URL}/get-users`, {
@@ -359,7 +373,7 @@ export default function Chat(){
                  <nav>
                     <div>
                     <button onClick={showUserListOnClick}><i className="fas fa-comment-dots" style={{display:'block'}}></i></button>
-                    <button><i className="fas fa-user-plus" style={{display:'block'}}></i></button>
+                    {/* <button><i className="fas fa-user-plus" style={{display:'block'}}></i></button> */}
                     </div>
                     
                     <div>
@@ -377,10 +391,34 @@ export default function Chat(){
                     </div>
                  </nav>
             </div>
-            <div className="mid-chat-screen">
-              <div style={{display:showUserList? "block":"none"}}>
+            <div className="mid-chat-screen" style={{
+                display: isMobile ? (isUserListConatiner ? 'block' : 'none') : 'block'
+              }}>
+              <div style={{display:showUserList? "block":"none", padding:'10px'}}>
                 <div className="message-header contact-header">
                     <h3>Chats</h3>
+                    {isMobile &&(
+                           <div onClick={toggleMenuItemsForMobile}>
+                    <i className="fas fa-bars" style={{ display: 'block', color:'white' }}></i>
+                    <SidebarMenu
+                    isopen={showMenuItemsMobile}
+                    currentUserRef= {currentUserRef}
+                    showLogoutUser={setIsDialogueBox}
+                    showProfile={setShowUserProfile} 
+                    showChatList={setShowUsersList}
+                    showChat={setIsChatOpen}
+                    showMainChatScreen={setMainScreen}
+                    showUserListDiv={setUserListContainer}
+                    />
+                    <ConfirmDialog
+                        isOpen={isDialogOpen}
+                        message={`Are you sure, you want to logout?`}
+                        onConfirm={logoutUser}
+                        onCancel={handleCancel}
+                    />
+                    </div>
+                    )}
+                   
                 </div>
                 <div className="show-list">
                     <ul>
@@ -390,6 +428,8 @@ export default function Chat(){
                           setDefaultScreen(false)
                           setSelectedUser(user);
                           setIsChatOpen(true);
+                          setMainScreen(true)
+                          setUserListContainer(false)
                   
                           // Initiate WebSocket connection inside the onClick handler
                           connectWebSocket(user);
@@ -408,6 +448,27 @@ export default function Chat(){
                 <div className="profile-details-screen" style={{display:showProfile? "block":"none"}}>
                 <div className="message-header contact-header">
                     <h3>Profile</h3>
+                     {isMobile &&(
+                           <div onClick={toggleMenuItemsForMobile}>
+                    <i className="fas fa-bars" style={{ display: 'block', color:'white' }}></i>
+                    <SidebarMenu
+                    isopen={showMenuItemsMobile}
+                    currentUserRef= {currentUserRef}
+                    showLogoutUser={setIsDialogueBox}
+                    showProfile={setShowUserProfile} 
+                    showChatList={setShowUsersList}
+                    showChat={setIsChatOpen}
+                    showMainChatScreen={setMainScreen}
+                    showUserListDiv={setUserListContainer}
+                    />
+                    <ConfirmDialog
+                        isOpen={isDialogOpen}
+                        message={`Are you sure, you want to logout?`}
+                        onConfirm={logoutUser}
+                        onCancel={handleCancel}
+                    />
+                    </div>
+                    )}
                 </div>
                       <img src={currentUserRef.profile || profile} className="user-profile-image"></img>
                       <div className="edit-profile-button">
@@ -438,7 +499,9 @@ export default function Chat(){
             
             
             </div>
-            <div className="show-main-screen">
+            <div className="show-main-screen"  style={{
+                display: isMobile ? (isMainScreen ? 'block' : 'none') : 'block'
+              }}>
               <div className="show-default-screen" style={{display:isDefaultScreen?"flex":"none"}}>
                 <img src={defaulScreenBg}></img>
                 <p>
@@ -449,6 +512,15 @@ export default function Chat(){
             <div className="chat-screen-container" style={{ display: isChatOpen ? "block" : "none" }}>
             <div className="profile-header chat-screen-header">
                    <div className="user-info-header">
+                     {isMobile &&(
+                     <button className="goBack" onClick={()=>{
+                      setUserListContainer(true)
+                      setMainScreen(false)
+                     }}>
+                     <i className="fas fa-arrow-left" style={{ color: 'white' }}></i>
+                     </button>
+                     )}
+                     
                     <img src={profile}  alt="user" />
                     <span>{selectedUser?.username || 'Select a user'}</span>
                     </div>
@@ -481,7 +553,7 @@ export default function Chat(){
                             </li>
                           ) : getMediaCategoryFromMime(UserMessage.mime) === 'image' ? (
                             <li className="fileMessage" key={index}>
-                              <img src={UserMessage.file} alt="Sent file" style={{ maxWidth: '200px' }} />
+                              <img src={UserMessage.file} alt="Sent file" className="chat-image-size"/>
                             </li>
                           ) : getMediaCategoryFromMime(UserMessage.mime) === 'doc' ? (
                             <li className="fileMessage" key={index}>

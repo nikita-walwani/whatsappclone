@@ -7,8 +7,8 @@ export default function confirmDialog({isOpen, message, onConfirm, onCancel}){
         
             <div style={overlayStyle}>
               <div style={dialogStyle}>
-                <p>{message}</p>
-                <div>
+                <p style={{color:'black'}}>{message}</p>
+                <div className='options'>
                   <button style={{ ...buttonStyle, ...confimButton }} onClick={onConfirm}>Confirm</button>
                   <button style={{...buttonStyle, ...cancelButton}} onClick={onCancel}>Cancel</button>
                 </div>
@@ -37,6 +37,7 @@ const overlayStyle = {
     borderRadius: '8px',
     width: '300px',
     textAlign: 'center',
+    margin:'10px'
   };
 
 const buttonStyle= {

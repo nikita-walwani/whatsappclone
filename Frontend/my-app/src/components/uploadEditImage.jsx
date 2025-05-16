@@ -10,15 +10,17 @@ const UploadImage = ({ onUploadSuccess , id}) => {
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   
   const handleFileChange = (e) => {
-    setIsButtonDisabled(true);
-    setFile(e.target.files[0]);
-    if(file) {
-      setIsButtonDisabled(false);
-    } else {
-      setIsButtonDisabled(true);
-    }
-  };
+  const selectedFile = e.target.files?.[0];
+  
 
+  if (selectedFile) {
+    setFile(selectedFile); // update state
+    setIsButtonDisabled(false);
+  } else {
+   
+    setIsButtonDisabled(true);
+  }
+};
   const handleUpload = async () => {
     if (!file) {
       return;
@@ -56,8 +58,14 @@ const UploadImage = ({ onUploadSuccess , id}) => {
 
     return (
         <div style={profileEditButtons}>
-          <input type="file" accept="image/*" onChange={handleFileChange} style={uploadProfile}/>
+          <input type="file" accept="image/*" onChange={handleFileChange} style={uploadProfile}>
+          </input>
+          {isButtonDisabled && (
+            <button style={isButtonDisabled? disabledButton:buttonSelection}  disabled >Upload Profile Image</button>
+          )}
+          {!isButtonDisabled &&(
           <button onClick={handleUpload} style={isButtonDisabled? disabledButton:buttonSelection}  disabled={isButtonDisabled}>Upload Profile Image</button>
+          )}
         </div>
       );
 };

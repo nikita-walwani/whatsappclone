@@ -1,3 +1,6 @@
+@use './variables' as *;
+
+
 i{
     cursor: pointer;
 }
@@ -84,6 +87,7 @@ i{
     margin-left: 6%;
     height: 100vh;
     border-right: 1px solid var(--underlines);
+    position: relative;
     
 }
 
@@ -206,7 +210,7 @@ ul.chats-text{
     padding: 0;
     z-index: 1;
     overflow-y: scroll;
-    height: 80%;
+    max-height: 80%;
 
     
 }
@@ -218,10 +222,12 @@ ul.chats-text div{
 }
 .sender-text{
     text-align: right;
+    border-radius: 10px;
 }
 
 .receiver-text{
     text-align: left;
+    border-radius: 10px;
 }
 
 .sender-text li{
@@ -276,7 +282,7 @@ ul.chats-text div{
 
 .fileMessage{
     padding: 5px!important;
-    border-radius: 0!important;
+    border-radius: 5!important;
     color:white;
 }
 
@@ -313,4 +319,97 @@ ul.chats-text div{
     cursor: pointer;
     padding:8px 30px;
     border-radius:4px;
+}
+.chat-image-size{
+    max-height: 200px;
+}
+
+// media query
+// Extra small (xs): < $sm
+@media (max-width: #{ $sm - 1px }) {
+  .left-bar{
+    display: none;
+  }
+  .show-default-screen{
+    display: none!important;
+  }
+  .mid-chat-screen{
+    margin: 0;
+    width: 100%;
+  }
+  .contact-header{
+    width: 100%;
+   justify-content: space-between;
+   align-items: center;
+  }
+  .options{
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
+  }
+  .show-main-screen{
+    width: 100%;
+  }
+  .message-input i{
+    font-size: 18px;
+  }
+  .chats-text{
+    width: 100%;
+    bottom: 70px;
+  }
+  .sender-text{
+      padding: 5px 10px;
+  }
+  .receiver-text{
+      padding: 5px 10px;
+  }
+  .sender-text p {
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+  .receiver-text p {
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+  .sender-text li, .receiver-text li{
+    padding: 5px 25px;
+    border-radius: 15px;
+  }
+  .goBack, .goBack:focus {
+        background: none;
+        border: none;
+        box-shadow: none;
+  }
+  .media-popup-sm{
+        left: 50%!important;
+        width: 75%;
+  }
+  .chat-image-size{
+    max-height: 100px;
+}
+}
+
+// Small (sm): ≥ $sm and < $md
+@media (min-width: $sm) and (max-width: #{ $md - 1px }) {
+  /* Styles for small devices */
+}
+
+// Medium (md): ≥ $md and < $lg
+@media (min-width: $md) and (max-width: #{ $lg - 1px }) {
+  /* Styles for medium devices */
+}
+
+// Large (lg): ≥ $lg and < $xl
+@media (min-width: $lg) and (max-width: #{ $xl - 1px }) {
+  /* Styles for large devices */
+}
+
+// Extra large (xl): ≥ $xl and < $xxl
+@media (min-width: $xl) and (max-width: #{ $xxl - 1px }) {
+  /* Styles for extra large devices */
+}
+
+// Extra extra large (xxl): ≥ $xxl
+@media (min-width: $xxl) {
+  /* Styles for extra extra large devices */
 }
