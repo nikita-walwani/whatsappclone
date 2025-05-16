@@ -343,7 +343,10 @@ export default function Chat(){
           }
     
           if (!res.ok) {
-            throw new Error(`HTTP error! Status: ${res.status}`);
+            localStorage.setItem("access_token", data.access_token);
+            localStorage.setItem("current_user", JSON.stringify(data.user));
+            window.location.href = "/login"; // Redirect to the homepage or another page
+            console.log (`HTTP error! Status: ${res.status}`);
           }
     
           return res.json();

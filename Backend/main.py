@@ -71,7 +71,7 @@ async def login(user_credentials: UserLogin):
             "id": str(user["_id"]),
             "username": user["name"],
             "email": user["email"],
-            "profile":user["profile"]
+            "profile":user.get('profile', "")
         }
     }
     

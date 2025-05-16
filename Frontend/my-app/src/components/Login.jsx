@@ -92,7 +92,7 @@ export default function Login() {
                 
           <button type='submit' className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 sign-up-button">
           
-            Sign In
+            Login
            
             
           </button>
