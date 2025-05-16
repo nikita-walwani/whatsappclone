@@ -53,7 +53,6 @@ export default function Login() {
         alert("Something went wrong!");
       }
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 login-bg">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md login">
@@ -75,8 +74,8 @@ export default function Login() {
           <div className='relative mb-4 space-input pass-input'>
           <input
             name='password'
-            type="password"
-            placeholder={showPassword?"text":"password"}
+            type={showPassword?"text":"password"}
+            placeholder='password'
             onChange={handleChange}
             value={formData.password}
             autoComplete="current-password" 
