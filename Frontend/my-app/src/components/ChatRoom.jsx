@@ -368,8 +368,6 @@ export default function Chat(){
         controller.abort();
       };
     }, []);
-
-    console.log(usersList)
     
     return(
     
