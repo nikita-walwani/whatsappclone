@@ -417,6 +417,7 @@ export default function Chat(){
                     showChat={setIsChatOpen}
                     showMainChatScreen={setMainScreen}
                     showUserListDiv={setUserListContainer}
+                    setIsOpen={setMenuItemsForMobile}
                     />
                     <ConfirmDialog
                         isOpen={isDialogOpen}
@@ -472,6 +473,7 @@ export default function Chat(){
                     showChat={setIsChatOpen}
                     showMainChatScreen={setMainScreen}
                     showUserListDiv={setUserListContainer}
+                    setIsOpen={setMenuItemsForMobile}
                     />
                     <ConfirmDialog
                         isOpen={isDialogOpen}

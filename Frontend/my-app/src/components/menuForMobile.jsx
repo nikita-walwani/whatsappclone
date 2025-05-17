@@ -1,8 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef} from "react";
 import ConfirmDialog from "./confirmDialog"; 
 import profile from "../images/profile.png"
 
-const SidebarMenu = ({isopen, currentUserRef, showLogoutUser, showProfile, showChatList, showChat, showMainChatScreen, showUserListDiv}) => {
+const SidebarMenu = ({isopen, currentUserRef, showLogoutUser, showProfile, showChatList, showChat, showMainChatScreen, showUserListDiv, setIsOpen}) => {
+
+  const menuRef = useRef(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [setIsOpen]);
+
+
   if(!isopen){
     return null;
   }
@@ -10,6 +27,8 @@ const SidebarMenu = ({isopen, currentUserRef, showLogoutUser, showProfile, showC
   
   const logoutUser=()=>{
     showLogoutUser(true)
+    setIsOpen(false); // ✅ Close on click
+    
     
   }
 
@@ -20,6 +39,7 @@ const SidebarMenu = ({isopen, currentUserRef, showLogoutUser, showProfile, showC
     showMainChatScreen(false)
     showUserListDiv(true)
     showChatList(false)
+    setIsOpen(false);
   }
   
   const chatList=()=>{
@@ -29,12 +49,13 @@ const SidebarMenu = ({isopen, currentUserRef, showLogoutUser, showProfile, showC
     showMainChatScreen(false)
     showUserListDiv(true)
     showProfile(false)
+    setIsOpen(false);
   }
   
  
   
   return (
-    <div style={toggleButton}>
+    <div ref={menuRef} style={toggleButton}>
         <button onClick={chatList} style={buttons}>
             <i className="fas fa-comment-dots" style={buttonIcon}></i>Chats
         </button>
