@@ -102,14 +102,9 @@ i{
     background: url("../images/message-doodles.jpg");
 }
 
-.show-list img{
-    width: auto;
-    padding: 5px;
-    height: 55px;
-
-}
 .show-list{
     color: var(--dark-bg-text-color);
+    overflow: scroll;
     
 }
 .show-list ul{
@@ -188,6 +183,8 @@ i{
 
 .chat-screen-header img{
     width: 50px;
+    height: 50px;
+    border-radius: 50%;
 }
 
 .user-info-header{
@@ -324,6 +321,11 @@ ul.chats-text div{
     max-height: 200px;
 }
 
+.user-profile{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
 // media query
 // Extra small (xs): < $sm
 @media (max-width: #{ $sm - 1px }) {

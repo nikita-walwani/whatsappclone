@@ -145,7 +145,8 @@ async def get_user(token: str = Depends(oauth2)):
             users.append({
                 "id": str(user["_id"]),
                 "username": user.get("name", "Unnamed User"),
-                "email": user.get("email")
+                "email": user.get("email"),
+                "profile":user.get('profile', "")
             })
     except Exception as e:
         raise HTTPException(status_code=500, detail="Database error")

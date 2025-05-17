@@ -368,6 +368,8 @@ export default function Chat(){
         controller.abort();
       };
     }, []);
+
+    console.log(usersList)
     
     return(
     
@@ -381,7 +383,12 @@ export default function Chat(){
                     
                     <div>
                     <button className="user-profile" onClick={showUserProfileOnClick}>
-                      <img src={currentUserRef.profile || profile}  className="profile-img"></img>
+                      <img src={currentUserRef.profile || profile}  className="profile-img"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = profile; // default avatar
+                      }}
+                      ></img>
                     </button>
                     <button onClick={handleConfirmDialogue}   
                     ><i className="fas fa-sign-out-alt" style={{display:'block'}}></i></button>
@@ -438,7 +445,11 @@ export default function Chat(){
                           connectWebSocket(user);
                         }}
                           className={selectedUser?.id === user.id ? "selected" : ""}>
-                            <img src={profile}  alt="user" />
+                            <img className="user-profile" src= {user.profile || profile}
+                              alt="user" onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = profile; // default avatar
+                            }}/>
                             <div className="user-detail">
                             <p>{user.username}</p>
                             <p className="last-media">Last message</p>
@@ -473,7 +484,12 @@ export default function Chat(){
                     </div>
                     )}
                 </div>
-                      <img src={currentUserRef.profile || profile} className="user-profile-image"></img>
+                      <img src={currentUserRef.profile || profile} className="user-profile-image"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = profile; // default avatar
+                      }}
+                      ></img>
                       <div className="edit-profile-button">
                       <button  onClick={() => setIsUploadMedia(true)} style={{display:!IsUploadProfile? 'block':'none'}}>Edit Profile</button>
                       </div>
@@ -524,7 +540,15 @@ export default function Chat(){
                      </button>
                      )}
                      
-                    <img src={profile}  alt="user" />
+                    <img 
+                      src={selectedUser?.profile?.trim() ? selectedUser.profile : profile}
+                      alt="User"
+                      onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = profile; // default avatar
+                    }}
+                    />
+
                     <span>{selectedUser?.username || 'Select a user'}</span>
                     </div>
             </div>

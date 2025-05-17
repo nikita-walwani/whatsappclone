@@ -21,6 +21,7 @@ class User(BaseModel):
     id: str
     username: str
     email:EmailStr
+    profile: str
 
 # Combined model with both token and users
 class TokenWithUsers(BaseModel):
