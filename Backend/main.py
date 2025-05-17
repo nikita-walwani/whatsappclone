@@ -17,10 +17,10 @@ prod_frontend = os.getenv("REACT_APP_URL")
 #local_frontend = "http://localhost:5173"
 
 # Allow requests from React (localhost:5173)
-# print("React Frontend URL:", os.getenv("REACT_APP_URL")) 
+print("React Frontend URL:", os.getenv("REACT_APP_URL")) 
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=[local_frontend],
+    #allow_origins=[local_frontend],
     allow_origins=[prod_frontend],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
@@ -102,8 +102,7 @@ async def edit_user(user_data: EditUser,userId: str, token: str = Depends(oauth2
     # Prepare data for updating the user
     update_user = {
         "name": user_data.name,
-        "profile": user_data.file_url,
-        "profile_status": user_data.profile_status
+        "profile": user_data.profile
     }
     
     # Perform the update operation
@@ -129,8 +128,7 @@ async def edit_user(user_data: EditUser,userId: str, token: str = Depends(oauth2
             "id": str(updated_user["_id"]),
             "username": updated_user["name"],
             "email": updated_user["email"],
-            "profile_status": updated_user["profile_status"],
-            "file_url": updated_user["file_url"]
+            "profile": updated_user.get('profile')
         }
     }
 

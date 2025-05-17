@@ -147,8 +147,7 @@ export default function Chat(){
     
       const editData = {
         name: userNameOnEdit,  // taken from input state
-        file_url: "https://pngtree.com/so/laptop-chat",
-        profile_status: "active on chat"
+        profile: currentUser.profile || "",
       };
     
       try {
