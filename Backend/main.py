@@ -12,14 +12,13 @@ from fastapi.staticfiles import StaticFiles
 import os, shutil
 
 app = FastAPI()
-
-#prod_frontend = os.getenv("REACT_APP_URL")
-local_frontend = "http://localhost:5173"
+prod_frontend = os.getenv("REACT_APP_URL")
+# local_frontend = "http://localhost:5173"
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[local_frontend],
-    #allow_origins=[prod_frontend],
+    #allow_origins=[local_frontend],
+    allow_origins=[prod_frontend],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
