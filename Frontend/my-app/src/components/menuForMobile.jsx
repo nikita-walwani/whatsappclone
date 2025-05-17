@@ -9,7 +9,7 @@ const SidebarMenu = ({isopen, currentUserRef, showLogoutUser, showProfile, showC
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false);
+        setTimeout(() => setIsOpen(false), 0);
       }
     };
 
@@ -39,7 +39,6 @@ const SidebarMenu = ({isopen, currentUserRef, showLogoutUser, showProfile, showC
     showMainChatScreen(false)
     showUserListDiv(true)
     showChatList(false)
-    setIsOpen(false);
   }
   
   const chatList=()=>{

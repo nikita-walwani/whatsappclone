@@ -361,12 +361,13 @@ export default function Chat(){
             console.error('[Error] Fetch failed:', error.message);
           }
         });
-    
+   
       return () => {
         controller.abort();
       };
     }, []);
     
+
     return(
     
         <div className="chat-screen-main">
@@ -444,11 +445,13 @@ export default function Chat(){
                           connectWebSocket(user);
                         }}
                           className={selectedUser?.id === user.id ? "selected" : ""}>
+                            <div>
                             <img className="user-profile" src= {user.profile || profile}
                               alt="user" onError={(e) => {
                               e.target.onerror = null;
                               e.target.src = profile; // default avatar
                             }}/>
+                            </div>
                             <div className="user-detail">
                             <p>{user.username}</p>
                             <p className="last-media">Last message</p>

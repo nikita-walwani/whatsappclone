@@ -13,7 +13,7 @@ import os, shutil
 
 app = FastAPI()
 prod_frontend = os.getenv("REACT_APP_URL")
-# local_frontend = "http://localhost:5173"
+#local_frontend = "http://localhost:5173"
 
 app.add_middleware(
     CORSMiddleware,
