@@ -431,7 +431,9 @@ export default function Chat(){
                 </div>
                 <div className="show-list">
                     <ul>
-                        {usersList.map((user) => (
+                        {usersList
+                        .filter(user => user.id !== currentUserRef.id) // 👈 Exclude current user
+                        .map(user => (
                         <li key={user.id} onClick={() => {
                           // Your existing code
                           setDefaultScreen(false)

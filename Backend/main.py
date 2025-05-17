@@ -13,11 +13,15 @@ import os, shutil
 
 app = FastAPI()
 
+prod_frontend = os.getenv("REACT_APP_URL")
+#local_frontend = "http://localhost:5173"
 
 # Allow requests from React (localhost:5173)
+# print("React Frontend URL:", os.getenv("REACT_APP_URL")) 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv('REACT_APP_URL')],  # Your frontend's origin
+    # allow_origins=[local_frontend],
+    allow_origins=[prod_frontend],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
