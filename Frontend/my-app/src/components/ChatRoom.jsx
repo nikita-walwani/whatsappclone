@@ -168,7 +168,6 @@ export default function Chat(){
         }
     
         const data = await response.json();
-        console.log(data);
     
         // Check for the presence of an access token
         if (data.access_token) {

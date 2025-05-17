@@ -13,29 +13,29 @@ import os, shutil
 
 app = FastAPI()
 
-prod_frontend = os.getenv("REACT_APP_URL")
-#local_frontend = "http://localhost:5173"
+#prod_frontend = os.getenv("REACT_APP_URL")
+local_frontend = "http://localhost:5173"
 
-# Allow requests from React (localhost:5173)
-print("React Frontend URL:", os.getenv("REACT_APP_URL")) 
 app.add_middleware(
     CORSMiddleware,
-    #allow_origins=[local_frontend],
-    allow_origins=[prod_frontend],
+    allow_origins=[local_frontend],
+    #allow_origins=[prod_frontend],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
 )
 
-# Determine the base directory of the current script
-base_dir = os.path.dirname(os.path.realpath(__file__))
+# Choose the static folder based on the environment
+if os.getenv("ENV")=='production':
+    static_folder_name = "prod_static"
+else:
+    static_folder_name = "local_static"
 
-# Construct the path to the 'static' directory
-static_dir = os.path.join(base_dir, "static")
+base_dir = os.path.dirname(os.path.realpath(__file__))
+static_dir = os.path.join(base_dir, static_folder_name)
+
 
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
-
-os.makedirs("static/media", exist_ok=True)
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -84,7 +84,7 @@ async def login(user_credentials: UserLogin):
 async def edit_user(user_data: EditUser,userId: str, token: str = Depends(oauth2)):
     # Decode token and verify payload
     payload = decode_access_token(token)
-    print(payload)
+    
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid Token")
     
@@ -183,14 +183,24 @@ async def upload_media( user_id: str = Form(...),
     payload = decode_access_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token.")
-    
     filename = f"{user_id}_{file.filename}"
-    path = f"static/media/{filename}"
-    
+
+    # Full absolute path on disk
+    path = os.path.join(static_dir, "media", filename)
+
+    # Make sure directory exists
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    # Save the file
     with open(path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    url = f"{os.getenv('VITE_BACKEND_BASE_URL')}/{path}" 
+    # Build the URL that frontend can use
+    backend_base_url = os.getenv("VITE_BACKEND_BASE_URL").rstrip("/")
+
+    # URL must use /static/, not the folder name
+    url = f"{backend_base_url}/static/media/{filename}"
+    
    
     media_doc = {
         "user_id": user_id,

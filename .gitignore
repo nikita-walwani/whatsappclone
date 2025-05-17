@@ -27,3 +27,5 @@ node_modules
 # Python virtual environment and bytecode
 Backend/venv/
 Backend/.venv/
+Backend/local_static
+Backend/static
