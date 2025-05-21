@@ -1,6 +1,11 @@
+from pathlib import Path
 import time
+import aiosqlite
 from fastapi import FastAPI, Form, HTTPException, Depends, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy import select
+from common_processing import create_message_data
+from sqlite_database.sqlite_models import ChatMessage
 from schemas  import UserCreate, UserLogin, Token, TokenWithUsers, EditUser
 from database import user_collection, media_collection
 from auth import decode_access_token, hash_password, verify_password, create_access_token
@@ -8,10 +13,23 @@ from bson.objectid import ObjectId
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from collections import defaultdict
+from models import Message, MessageStatusUpdate
+from sqlite_database.sqlite_config import SessionLocal, engine, Base
+from sqlite_database.sqlite_db_activities import save_message_to_db, update_message_statuses  
 from fastapi.staticfiles import StaticFiles
 import os, shutil
+from contextlib import asynccontextmanager
+import base64
+from typing import List, Optional
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    
+app = FastAPI(lifespan=lifespan)
+
 prod_frontend = os.getenv("REACT_APP_URL")
 #local_frontend = "http://localhost:5173"
 
@@ -37,6 +55,8 @@ static_dir = os.path.join(base_dir, static_folder_name)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="login")
+
+
 
 @app.post("/register", response_model=Token)
 async def register(user:UserCreate):
@@ -77,10 +97,11 @@ async def login(user_credentials: UserLogin):
             "profile":user.get('profile', "")
         }
     }
-    
+        
+
 
 @app.post("/edit-user/{userId}")
-async def edit_user(user_data: EditUser,userId: str, token: str = Depends(oauth2)):
+async def edit_user(user_data: EditUser, userId: str, token: str = Depends(oauth2)):
     # Decode token and verify payload
     payload = decode_access_token(token)
     
@@ -173,6 +194,33 @@ async def logout(token: str = Depends(oauth2)):
 
     return JSONResponse(content={"message": "Logged out successfully."})
 
+@app.put("/messages/update-status")
+async def update_message_status(messages: List[MessageStatusUpdate],  token: str = Depends(oauth2)):
+    # Decode and validate token
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    async with SessionLocal() as session:
+        for msg in messages:
+            # Find the message by id, sender_id, and receiver_id
+            result = await session.execute(
+                select(ChatMessage).where(
+                    ChatMessage.id == msg.id,
+                    ChatMessage.sender_id == msg.sender_id,
+                    ChatMessage.receiver_id == msg.receiver_id
+                )
+            )
+            chat_message = result.scalar_one_or_none()
+            
+            if chat_message:
+                chat_message.status = msg.status
+            else:
+                # Optional: raise an error or skip if message not found
+                continue
+
+        await session.commit()
+    return {"status":200,"message": "Statuses updated successfully"}
 
 @app.post("/upload-media")
 async def upload_media( user_id: str = Form(...),
@@ -236,15 +284,70 @@ async def upload_media( user_id: str = Form(...),
     return {"message": "Media uploaded", "url": url, "media_id": str(media_id)}
 
 
-# websocket
+@app.get("/messages/{userId}", response_model=dict)
+async def get_messages(userId: str, token: str = Depends(oauth2)):
+    # Decode and validate token
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
+    # Validate ObjectId
+    try:
+        user_id = ObjectId(userId)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+    # Check if user exists in MongoDB
+    user = await user_collection.find_one({"_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Path to your SQLite DB
+    BASE_DIR = Path(__file__).resolve().parent
+    db_path = BASE_DIR / "sqlite_database" / "data" / "chat_history.db"
+
+    messages: List[Message] = []
+    
+
+    query = """
+        SELECT 
+            cm.id, cm.sender_id, cm.receiver_id, cm.message, cm.status, cm.timestamp, cm.media_id,
+            m.file_path, cm.message_type
+        FROM chat_messages cm
+        LEFT JOIN media m ON cm.media_id = m.id
+         WHERE cm.sender_id = ? OR cm.receiver_id = ?
+        ORDER BY cm.timestamp DESC
+        LIMIT 50
+    """
+
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute(query, (userId, userId,)) as cursor:
+            async for row in cursor:
+                raw_file_path = row[7]  # media.file_path
+                file_url = raw_file_path if raw_file_path else None  # m.file_path
+
+
+                messages.append(Message(
+                    id=row[0],
+                    sender_id=row[1],
+                    receiver_id=row[2],
+                    message=row[3],
+                    status=row[4],
+                    timestamp=row[5],
+                    file_path=file_url,
+                    message_type=row[8]
+                ))
+
+    return {"user_id": userId, "messages": [msg.dict() for msg in messages]}
+
+ 
 user_connections = {}
 
 @app.websocket("/ws/chat/{sender_id}/{receiver_id}")
 async def websocket_endpoint(websocket: WebSocket, sender_id: str, receiver_id: str):
     await websocket.accept()
     user_connections[sender_id] = websocket
-    
+  
     try:
         while True:
             data = await websocket.receive()
@@ -256,29 +359,36 @@ async def websocket_endpoint(websocket: WebSocket, sender_id: str, receiver_id: 
                     continue  # skip malformed messages
                 
                 message_type = message.get("type")
-                if message_type == "text":   
-                    file_message = {
-                        "userId": sender_id,
-                        "type": "text",
-                        "text": message.get("text"),
-                        "timestamp": int(time.time() * 1000)
-                    }
+                timestamp_ms = int(time.time() * 1000)
+
+                message_data = {
+                    "userId": sender_id,
+                    "receiver_id": receiver_id,
+                    "type": message_type,
+                    "timestamp": timestamp_ms
+                }
+
+                if message_type == "text":
+                    message_data["text"] = message.get("text")
 
                 elif message_type == "file":
-                    file_message={
-                        "userId": sender_id,
-                        "type": "file",
-                        "file": message.get("bytes"),
-                        "mime": message.get("mime"),
-                        "filename": message.get("filename"),
-                        "timestamp": int(time.time() * 1000)
-                    }
-                
+                    file_bytes = bytes(message.get("bytes", []))
+                    message_data["file"] = base64.b64encode(file_bytes).decode("utf-8")  
+                    message_data["mime"] = message.get("mime")
+                    message_data["filename"] = message.get("filename")
+                    
+                if receiver_id in user_connections and sender_id in user_connections:
+                    message_data["status"] = 'read'
+                else:
+                    message_data["status"] = 'sent'
+
+                await save_message_to_db(message_data)
+                               
                 if receiver_id in user_connections and receiver_id != sender_id:
-                            await user_connections[receiver_id].send_json(file_message)
+                            await user_connections[receiver_id].send_json(message_data)
 
                 if sender_id in user_connections:
-                        await user_connections[sender_id].send_json(file_message)
+                        await user_connections[sender_id].send_json(message_data)
 
 
     except WebSocketDisconnect:
@@ -288,3 +398,56 @@ async def websocket_endpoint(websocket: WebSocket, sender_id: str, receiver_id: 
         print(f"Runtime error: {e}")
     except Exception as e:
         print(f"Unhandled error: {e}")
+        
+
+connected_users_list={}
+chat_users_list={}
+
+@app.websocket("/ws/connect-user")
+async def track_user_actions(websocket:WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive()
+            import json
+            recieved_data = data["text"]
+            parsed_data =json.loads(recieved_data)
+            
+            user_id =parsed_data["user_id"]
+            receiver_id =parsed_data["receiver_id"] 
+            
+            if parsed_data["action"] == 'login':
+                connected_users_list[user_id]=websocket
+                await connected_users_list[user_id].send_json("User Logged in Successfully")
+                
+            if parsed_data["action"] == 'chatopened':
+                
+                chat_users_list[user_id]=websocket  
+                
+                if  parsed_data["is_chat_active"]:      
+                    message_data = create_message_data(user_id, receiver_id, parsed_data)
+                    if receiver_id in connected_users_list:
+                        if receiver_id in chat_users_list:
+                            message_data["status"] = "read"
+                        else:
+                            message_data["status"] = "delivered"
+                        await connected_users_list[receiver_id].send_json(message_data)
+                        
+                    chat_id = await save_message_to_db(message_data) 
+                    message_data["chat_id"]= chat_id    
+                    await connected_users_list[user_id].send_json(message_data) 
+                    
+                if  parsed_data["is_chat_active"] == False:
+                    await update_message_statuses(parsed_data["update_status"], "read")
+   
+    except WebSocketDisconnect:
+        print(f"WebSocket disconnected: {user_id}")
+        connected_users_list.pop(user_id, None)
+        chat_users_list.pop(user_id, None)
+    except RuntimeError as e:
+        print(f"Runtime error: {e}")
+    except Exception as e:
+        print(f"Unhandled error: {e}")
+    
+    
+    

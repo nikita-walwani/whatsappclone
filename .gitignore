@@ -29,3 +29,7 @@ Backend/venv/
 Backend/.venv/
 Backend/local_static
 Backend/static
+*.db
+sqlite_database/data/
+sqlite_database/media/
+testing

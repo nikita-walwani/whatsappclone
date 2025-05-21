@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { use, useEffect, useRef } from "react";
 import React, { useState } from "react";
 import "../css/chatRoom.scss";
 import profile from "../images/profile.png"
@@ -13,8 +13,25 @@ import UploadImage from "./uploadEditImage"
 import { breakpoints } from "../breakpoints";
 import SidebarMenu from "./menuForMobile";
 import { useMediaQuery } from 'react-responsive';
+import { fetchMessages, updateMessageStatus } from '../apis/chat_message';
+import {convertToISOTimestamp, processUsersWithMessages} from '../common_processing/common_processing'
+import { v4 as uuidv4 } from 'uuid';
+import { BsCheck, BsCheckAll } from 'react-icons/bs';
 
 const API_URL = import.meta.env.VITE_BACKEND_BASE_URL;
+
+const getStatusIcon = (status) => {
+  switch (status) {
+    case 'sent':
+      return <BsCheck size={20} />;
+    case 'delivered':
+      return <BsCheckAll size={20} />;
+    case 'read':
+      return <BsCheckAll size={20} color="var(--accent-color)" />;
+    default:
+      return null;
+  }
+};
 
 
 
@@ -34,7 +51,7 @@ export default function Chat(){
     const [showMenuItemsMobile, setMenuItemsForMobile] = useState(false)
     const [isMainScreen, setMainScreen] = useState(false)
     const [isUserListConatiner, setUserListContainer] = useState(true)
-    
+    const [chatHistory, setChatHistory]=useState([])
 
 
     const toggleMenuItemsForMobile=()=>{
@@ -188,6 +205,24 @@ export default function Chat(){
     
   // Connect WebSocket for a specific user (sender and receiver)
   const connectWebSocket = (receiver) => {
+
+    //update message status
+     const update_messages = chatHistory.filter((msg) => (msg.status === "sent" || msg.status === "delivered" ) && msg.receiver_id === currentUserRef.id && msg.sender_id ===receiver.id)
+    .map(msg => ({
+              ...msg,
+              status: 'read'
+     }));
+     if (update_messages.length > 0){
+              const message_update_status = updateMessageStatus(localStorage.access_token, update_messages)
+              
+              if (message_update_status.status ==200){
+                chatHistory.map(msg => {
+                  const updatedMsg = update_messages.find(updated => updated.id === msg.id);
+                  return updatedMsg ? updatedMsg : msg;
+                });
+              }
+            
+           }
     // If a socket already exists, close it before creating a new one
     if (socket.current && socket.current.readyState === WebSocket.OPEN) {
       socket.current.close();
@@ -205,7 +240,7 @@ export default function Chat(){
     };
 
     socket.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+      const data = JSON.parse(event.data);  
       
       if (data.type ===  "text") {
         setMessages((prevMessages) => [...prevMessages, data])
@@ -219,6 +254,17 @@ export default function Chat(){
         setMessages((prevMessages) => [...prevMessages, data])
         // You can set <img src={url}/> or <a href={url} download>
       }
+      const new_message =  {  
+            "id": uuidv4(),
+            "sender_id":data.userId,
+            "receiver_id": data.receiver_id,
+            "message": data.text || "",
+            "status": "sent",
+            "timestamp": convertToISOTimestamp(data.timestamp),
+            "file_path": data.file || "" ,
+            "message_type": data.type
+        }
+      setChatHistory(prev => [...prev, new_message]);
       
     };
 
@@ -249,7 +295,7 @@ export default function Chat(){
               type: 'file',
               bytes: Array.from(new Uint8Array(arrayBuffer)),
               mime: file.type,  // <-- Send MIME type here
-              filename: file.name,
+              filename: file.name,  
             })); // Send binary data
             
            
@@ -349,11 +395,45 @@ export default function Chat(){
     
           return res.json();
         })
-        .then((data) => {
-          if (data) {
-            getList(data.users);
+        .then(async (data) => {
+      if (data) {
+        getList(data.users);
+        const user_list = data.users
+
+        const userId = data.currentUserId || data.users[0]?.id; // adapt accordingly
+        if (userId) {
+          try {
+            // Call your axios fetchMessages function here
+            const messages = await fetchMessages(currentUserRef.id, token);
+            setChatHistory(messages.messages)
+
+            const user_messages = messages.messages
+            const updatedUsersList = processUsersWithMessages(user_list, user_messages);
+            getList(updatedUsersList)
+            //update message status
+            const update_messages = messages.messages.filter((msg) => msg.status === "sent" && msg.receiver_id === currentUserRef.id)
+            .map(msg => ({
+              ...msg,
+              status: 'delivered'
+            }));
+            if (update_messages.length > 0){
+              const message_update_status = await updateMessageStatus(token, update_messages)
+              
+              if (message_update_status.status ==200){
+                chatHistory.map(msg => {
+                  const updatedMsg = update_messages.find(updated => updated.id === msg.id);
+                  return updatedMsg ? updatedMsg : msg;
+                });
+              }
+            
+           }
+           
+            // Do something with messages, e.g. setMessages(messages);
+          } catch (error) {
           }
-        })
+        }
+      }
+    })
         .catch((error) => {
           if (error.name === 'AbortError') {
             console.info('[Info] Fetch was aborted by AbortController.');
@@ -445,7 +525,7 @@ export default function Chat(){
                           connectWebSocket(user);
                         }}
                           className={selectedUser?.id === user.id ? "selected" : ""}>
-                            <div>
+                            <div style={{'display':'flex'}}>
                             <img className="user-profile" src= {user.profile || profile}
                               alt="user" onError={(e) => {
                               e.target.onerror = null;
@@ -454,7 +534,18 @@ export default function Chat(){
                             </div>
                             <div className="user-detail">
                             <p>{user.username}</p>
-                            <p className="last-media">Last message</p>
+                            <div>
+                            {user.last_message?.sender_id===currentUserRef.id && (
+                                 <span className="last-media" >You: </span>
+                            )}
+                            <span className="last-media">{
+                            user.last_message?.message || ''}</span>
+                            {user.count >0 &&(
+                            <div className="unread-message-count">
+                              <p>{user.count}</p>
+                            </div>
+                            )}
+                            </div>
                             </div>
                         </li>
                         ))}
@@ -556,23 +647,26 @@ export default function Chat(){
                     </div>
             </div>
             <div className="chat-container">
-            {messages.length > 0 && (
+              
+            {chatHistory.length > 0 && (
+              
               <ul  className="chats-text">
-              {[...messages]
-                .sort((a, b) => a.timestamp - b.timestamp) // ✅ Old to new
+              {[...chatHistory]
+                .filter(messages => (messages.receiver_id === currentUserRef.id && messages.sender_id===selectedUser.id) || (messages.receiver_id === selectedUser.id && messages.sender_id===currentUserRef.id))
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)) // ✅ Old to new
                 .map((UserMessage, index) => (
-                  <div  key={index} className={UserMessage.userId === currentUserRef.id ? 'sender-text' : 'receiver-text'}>
+                  <div  key={index} className={UserMessage.sender_id === currentUserRef.id ? 'sender-text' : 'receiver-text'}>
                   <p className="chat-time">
                     {new Date(UserMessage.timestamp).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
                       hour12: true,
                     })}</p>
-                 {UserMessage.type === 'text' && (
-                    <li key={index}>{UserMessage.text}</li>
+                 {UserMessage.message_type === 'text' && (
+                    <li key={index}>{UserMessage.message}</li>
                   )}
 
-                      {UserMessage.type === 'file' && (
+                      {UserMessage.message_type === 'file' && (
                         <>
                           {getMediaCategoryFromMime(UserMessage.mime) === 'video' ? (
                             <li className="fileMessage" key={index}>
@@ -599,6 +693,11 @@ export default function Chat(){
                             </li>
                           )}
                         </>
+                  )}
+                  {UserMessage.sender_id == currentUserRef.id &&(
+                  <div className="message-status">
+                    {getStatusIcon(UserMessage.status)}
+                  </div>
                   )}
                   </div>
                 ))}
