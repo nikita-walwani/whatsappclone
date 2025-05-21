@@ -3,13 +3,13 @@ import time
 
 def create_message_data(user_id, receiver_id, parsed_data):
     message_data = {
-        "userId": user_id,
+        "sender_id": user_id,
         "receiver_id": receiver_id,
-        "type": parsed_data["data"]["type"],
+        "message_type": parsed_data["data"]["type"],
         "timestamp": int(time.time() * 1000),
         "status": "sent",
     }
     if parsed_data["data"]["type"] == "text":
-        message_data["text"] = parsed_data["data"]["message"]
+        message_data["message"] = parsed_data["data"]["message"]
     return message_data
 

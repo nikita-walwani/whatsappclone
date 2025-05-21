@@ -31,3 +31,31 @@ export const processUsersWithMessages = (usersList, chatHistory) => {
     };
   });
 };
+
+export const updateUserWithLastMessage = (userList, newMessage) => {
+  return userList.map(user => {
+    if (user.id === newMessage.sender_id) {
+      return {
+        ...user,
+        last_message: newMessage,
+        count: (user.count || 0) + 1
+      };
+    }
+    return user;
+  });
+};
+
+
+export const updateMessageInChatHistory = (chatHistory, updateMessages) => {
+  const updateIds = new Set(updateMessages.map(msg => msg.id));
+
+  return chatHistory.map(chat => {
+    if (updateIds.has(chat.id)) {
+      return {
+        ...chat,
+        status: "read"
+      };
+    }
+    return chat;
+  });
+};

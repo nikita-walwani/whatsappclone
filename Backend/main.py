@@ -21,6 +21,7 @@ import os, shutil
 from contextlib import asynccontextmanager
 import base64
 from typing import List, Optional
+import json
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -408,20 +409,16 @@ async def track_user_actions(websocket:WebSocket):
     await websocket.accept()
     try:
         while True:
-            data = await websocket.receive()
-            import json
-            recieved_data = data["text"]
-            parsed_data =json.loads(recieved_data)
-            
-            user_id =parsed_data["user_id"]
-            receiver_id =parsed_data["receiver_id"] 
+            data = await websocket.receive_text()
+            parsed_data = json.loads(data)  
+            user_id = parsed_data["user_id"]
             
             if parsed_data["action"] == 'login':
                 connected_users_list[user_id]=websocket
                 await connected_users_list[user_id].send_json("User Logged in Successfully")
                 
             if parsed_data["action"] == 'chatopened':
-                
+                receiver_id = parsed_data["receiver_id"] 
                 chat_users_list[user_id]=websocket  
                 
                 if  parsed_data["is_chat_active"]:      
@@ -441,9 +438,7 @@ async def track_user_actions(websocket:WebSocket):
                     await update_message_statuses(parsed_data["update_status"], "read")
    
     except WebSocketDisconnect:
-        print(f"WebSocket disconnected: {user_id}")
-        connected_users_list.pop(user_id, None)
-        chat_users_list.pop(user_id, None)
+        print(f"WebSocket disconnected")
     except RuntimeError as e:
         print(f"Runtime error: {e}")
     except Exception as e:

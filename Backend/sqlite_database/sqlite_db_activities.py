@@ -13,7 +13,7 @@ MEDIA_DIR.mkdir(exist_ok=True)
 async def save_message_to_db(message_data: dict):
     async with SessionLocal() as session:
         media_id = None
-        if message_data["type"] == "file":
+        if message_data["message_type"] == "file":
             file_bytes = message_data.get("file")
             mime_type = message_data.get("mime")
             original_name = message_data.get("filename")
@@ -47,13 +47,13 @@ async def save_message_to_db(message_data: dict):
 
         # Save chat message
         chat_msg = ChatMessage(
-            sender_id=message_data["userId"],
+            sender_id=message_data["sender_id"],
             receiver_id=message_data["receiver_id"],
-            message=message_data.get("text"),
+            message=message_data.get("message"),
             status=message_data.get("status", "sent"),
             timestamp=datetime.fromtimestamp(message_data["timestamp"] / 1000.0, tz=timezone.utc),
             media_id=media_id,
-            message_type=message_data["type"]
+            message_type=message_data["message_type"]
         )
 
         session.add(chat_msg)
