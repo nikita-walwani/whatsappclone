@@ -41,7 +41,7 @@ export default function Login() {
         if (data.access_token) {
           localStorage.setItem("access_token", data.access_token);
           localStorage.setItem("current_user", JSON.stringify(data.user));
-          window.location.href = "/"; // Redirect to the homepage or another page
+          window.location.href = "/chat"; // Redirect to the homepage or another page
         } 
         else{
           alert(data.detail || "Signup failed");

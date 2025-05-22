@@ -32,25 +32,46 @@ export const processUsersWithMessages = (usersList, chatHistory) => {
   });
 };
 
-export const updateUserWithLastMessage = (userList, newMessage) => {
+export const updateUserWithLastMessage = (userList, messages) => {
   return userList.map(user => {
-    if (user.id === newMessage.sender_id) {
-      return {
-        ...user,
-        last_message: newMessage,
-        count: (user.count || 0) + 1
-      };
+    // Messages related to this user as sender or receiver
+    const relatedMessages = messages.filter(
+      msg => msg.sender_id === user.id || msg.receiver_id === user.id
+    );
+    if (relatedMessages.length === 0) {
+      return user;
     }
-    return user;
+    // Latest message by timestamp
+    const lastMessage = relatedMessages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    // Count only messages where status is "sent" or "delivered" AND receiver_id is the user.id
+    const count = relatedMessages.reduce((acc, msg) => {
+      if ((msg.status === "sent" || msg.status === "delivered") && msg.sender_id === user.id) {
+        return acc + 1;
+      }
+      return acc;
+    }, 0);
+
+    return {
+      ...user,
+      last_message: lastMessage[0],
+      count: count
+    };
   });
 };
 
 
-export const updateMessageInChatHistory = (chatHistory, updateMessages) => {
-  const updateIds = new Set(updateMessages.map(msg => msg.id));
-
+export const updateMessageInChatHistory = (chatHistory, updateIds, current_user_id, selected_user_id) => {
+  if (!Array.isArray(updateIds) || updateIds.length === 0) {
+    return chatHistory;
+  }
+  updateIds = updateIds.filter(id => id != null);
   return chatHistory.map(chat => {
-    if (updateIds.has(chat.id)) {
+    if (
+      updateIds.includes(chat.id) &&
+      chat.receiver_id === current_user_id &&
+      chat.sender_id === selected_user_id
+    ) {
       return {
         ...chat,
         status: "read"

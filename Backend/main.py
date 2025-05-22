@@ -402,7 +402,23 @@ async def websocket_endpoint(websocket: WebSocket, sender_id: str, receiver_id: 
         
 
 connected_users_list={}
-chat_users_list={}
+chat_users_list = []
+
+def is_user_connected(chat_users_list, user_id, connected_to):
+    return any(user for user in chat_users_list if user["id"] == user_id and user["connectedTo"] == connected_to)
+
+def update_user_connection(chat_users_list, user_id, new_connected_to):
+    for user in chat_users_list:
+        if user.get("id") == user_id:
+            user["connectedTo"] = new_connected_to
+            return True  # Update successful
+    
+    # User not found, so add new
+    chat_users_list.append({
+        "id": user_id,
+        "connectedTo": new_connected_to
+    })
+    return False  # New user added
 
 @app.websocket("/ws/connect-user")
 async def track_user_actions(websocket:WebSocket):
@@ -410,21 +426,30 @@ async def track_user_actions(websocket:WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
+            
             parsed_data = json.loads(data)  
             user_id = parsed_data["user_id"]
             
             if parsed_data["action"] == 'login':
                 connected_users_list[user_id]=websocket
-                await connected_users_list[user_id].send_json("User Logged in Successfully")
+                await connected_users_list[user_id].send_json({"data":"User Logged in Successfully"})
+                if parsed_data["update_status"] != []:
+                        await update_message_statuses(parsed_data["update_status"], "delivered")
+                        user_list = parsed_data["user_list_ids"]
+                        if user_list != []:
+                            for receiver_id in user_list:
+                                if receiver_id in connected_users_list:
+                                    update_status = {"update_status":parsed_data["update_status"]}
+                                    await connected_users_list[receiver_id].send_json(update_status)
                 
             if parsed_data["action"] == 'chatopened':
                 receiver_id = parsed_data["receiver_id"] 
-                chat_users_list[user_id]=websocket  
                 
-                if  parsed_data["is_chat_active"]:      
+                if  parsed_data["is_chat_active"] == True:   
+    
                     message_data = create_message_data(user_id, receiver_id, parsed_data)
                     if receiver_id in connected_users_list:
-                        if receiver_id in chat_users_list:
+                        if is_user_connected(chat_users_list, receiver_id, user_id):                       
                             message_data["status"] = "read"
                         else:
                             message_data["status"] = "delivered"
@@ -432,10 +457,19 @@ async def track_user_actions(websocket:WebSocket):
                         
                     chat_id = await save_message_to_db(message_data) 
                     message_data["chat_id"]= chat_id    
-                    await connected_users_list[user_id].send_json(message_data) 
+                    await connected_users_list[user_id].send_json(message_data)
                     
                 if  parsed_data["is_chat_active"] == False:
-                    await update_message_statuses(parsed_data["update_status"], "read")
+                    receiver_id = parsed_data["receiver_id"]
+                    update_user_connection(chat_users_list, user_id, receiver_id)
+                    if parsed_data["update_status"] != []: 
+                        await update_message_statuses(parsed_data["update_status"], "read")
+                        
+                        if receiver_id in connected_users_list:
+                            update_status = {"update_status":parsed_data["update_status"]}
+                            await connected_users_list[receiver_id].send_json(update_status)
+                        if receiver_id in chat_users_list:
+                            chat_users_list[user_id]=websocket 
    
     except WebSocketDisconnect:
         print(f"WebSocket disconnected")

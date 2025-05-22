@@ -52,7 +52,9 @@ export default function Chat(){
     const [isUserListConatiner, setUserListContainer] = useState(true)
     const [chatHistory, setChatHistory]=useState([])
     const [showProfile, setShowUserProfile] = useState(false)
-    let users_data = []
+    
+    let temp_chat_list = chatHistory
+
     const toggleMenuItemsForMobile=()=>{
          setMenuItemsForMobile(!showMenuItemsMobile)
     }
@@ -107,6 +109,7 @@ export default function Chat(){
     }
 
     const [usersList, getList] = useState([])
+    let users_data = usersList
     const [token, setToken] = useState("")
    
     const [selectedUser, setSelectedUser] = useState({});
@@ -228,12 +231,16 @@ export default function Chat(){
     const sendChatOpenedAction=(sender_id, receiver_id)=>
     {   
         if (socket.current && socket.current.readyState === WebSocket.OPEN){
-        const messages_id = chatHistory
+        const messages_id = temp_chat_list
             .filter(msg =>
-              (msg.user_id === receiver_id && msg.receiver_id === sender_id)
+              (msg.sender_id === receiver_id && msg.receiver_id === sender_id)
             )
             .map(msg => msg.id);
-         
+        const updateChatHistory = updateMessageInChatHistory(temp_chat_list, messages_id, currentUserRef.id, selectedUser.id)
+        setChatHistory(updateChatHistory)
+        const updatedUsersList = processUsersWithMessages(users_data, temp_chat_list);
+        getList(updatedUsersList)
+
         socket.current.send(JSON.stringify({
           "action" :"chatopened",
           "is_chat_active":false,
@@ -241,13 +248,8 @@ export default function Chat(){
           "receiver_id":receiver_id,
           "update_status": messages_id
          }));
-        const update_messages = chatHistory
-            .filter(msg =>
-              (msg.user_id === receiver_id && msg.receiver_id === sender_id)
-            )
-            .map(msg => msg);
-        const updateChatHistory = updateMessageInChatHistory(chatHistory, update_messages)
-        setChatHistory(updateChatHistory)
+
+        
       }
       else {
         console.warn("WebSocket not open. Message not sent.");
@@ -295,41 +297,6 @@ export default function Chat(){
 
       setIsChatOpen(false);
 
-    //   Start websocket
-      if (socket.current && socket.current.readyState === WebSocket.OPEN) {
-        socket.current.close();
-      }
-
-      socket.current = new WebSocket(`${API_URL}/ws/connect-user`);
-      socket.current.onopen = () => {
-      setIsConnected(true);
-      // Send message to socket on login
-      if (socket.current && socket.current.readyState === WebSocket.OPEN) {
-      socket.current.send(JSON.stringify({
-        action: "login",
-        user_id: parsed_user.id
-      }));
-      }    
-      };
-      socket.current.onmessage = (event) => {
-        const data = JSON.parse(event.data); 
-        setChatHistory((prevMessages) => [...prevMessages, data])
-        console.log(users_data)
-        const updated_users = updateUserWithLastMessage(users_data, data)
-        
-        getList(updated_users)
-        
-      }
-      socket.current.onclose = () => {
-      setIsConnected(false);
-      };
-      socket.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      };
-
-
-    //   End websocket 
-
     
       fetch(`${API_URL}/get-users`, {
         signal: controller.signal,
@@ -365,11 +332,86 @@ export default function Chat(){
                 // Call your axios fetchMessages function here
                 const messages = await fetchMessages(currentUserRef.id, token);
                 setChatHistory(messages.messages)
+                
                 const user_messages = messages.messages
+
                 const updatedUsersList = processUsersWithMessages(user_list, user_messages);
                 getList(updatedUsersList)
+
                 users_data = updatedUsersList
+                temp_chat_list = messages.messages
                 // Do something with messages, e.g. setMessages(messages);
+
+                 //   Start websocket
+                if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+                  socket.current.close();
+                }
+
+                socket.current = new WebSocket(`${API_URL}/ws/connect-user`);
+                socket.current.onopen = () => {
+                setIsConnected(true);
+                // Send message to socket on login
+                if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+                  const messages_id = temp_chat_list
+                        .filter(msg =>
+                          (msg.status==="sent" || msg.status==="delivered")
+                        )
+                        .map(msg => msg.id);
+                  const user_id = users_data.filter(user=>user.id!=currentUserRef.id).map(user=>user.id)
+                  socket.current.send(JSON.stringify({
+                    action: "login",
+                    user_id: parsed_user.id,
+                    update_status : messages_id,
+                    user_list_ids:user_id
+                  }));
+                }    
+                };
+                socket.current.onmessage = (event) => {
+                    setTimeout(() => {
+                      
+                    
+                    const data = JSON.parse(event.data);
+                    if ("message_type" in data) {
+                      // Add new message to chat history
+                      setChatHistory(prev => {
+                        const newChatHistory = [...prev, data];
+                        temp_chat_list = newChatHistory;  // keep temp_chat_list in sync with React state
+                        return newChatHistory;
+                      });
+                    }
+ 
+                    const messages_id = (data.update_status || []).filter(id => id != null);
+                    console.log('enreeeddddd')
+                    if (messages_id.length > 0){
+                      console.log('wnsas')
+                      setChatHistory(prev => {
+                        const updatedChatHistory = updateMessageInChatHistory(prev, messages_id, currentUserRef.id, selectedUser.id);
+                        temp_chat_list = updatedChatHistory;
+                        console.log("sas",updatedChatHistory)
+                        return updatedChatHistory;
+                        
+                      });
+                    }
+                    const updatedUsers = updateUserWithLastMessage(users_data, temp_chat_list);
+                    getList(updatedUsers);
+                    console.log(chatHistory)
+                    }, 1000);
+                  };
+
+                socket.current.onclose = () => {
+                setIsConnected(false);
+                navigate("/login");
+                };
+                socket.current.onerror = (error) => {
+                console.error("WebSocket error:", error);
+                };
+
+
+              //   End websocket 
+
+
+
+
               } catch (error) {
               }
             }
@@ -382,13 +424,17 @@ export default function Chat(){
             console.error('[Error] Fetch failed:', error.message);
           }
         });
+
+     
+    
    
       return () => {
         controller.abort();
       };
     }, []);
     
-   
+    // console.log("chat",chatHistory)``
+    // console.log("temp",temp_chat_list)
     return(
     
         <div className="chat-screen-main">
