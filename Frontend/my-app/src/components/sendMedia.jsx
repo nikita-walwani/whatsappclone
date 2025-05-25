@@ -3,12 +3,18 @@ import gallery from '../images/gallery.png'
 import play from '../images/play.png'
 import docs from '../images/google-docs.png'
 
-export default function SendMedia({ sendMessage, handleClose}) {
+export default function SendMedia({sendMessage, handleClose, sender_id, receiver_id, message_type}) {
   const [selectedFile, setSelectedFile] = useState(null);
 
 
   const handleFileSelect = (file) => {
-    setSelectedFile(file);
+    const message_data = {
+      "file":file,
+      "mime":file.type,
+      "filename":file.name
+    }
+    setSelectedFile(message_data);
+
     
   };
 
@@ -64,12 +70,12 @@ export default function SendMedia({ sendMessage, handleClose}) {
         style={{ display: 'none' }}
         onChange={(e) => handleFileSelect(e.target.files[0])}
       />
-      {selectedFile && <p>Selected file: {selectedFile.name}</p>}
+      {selectedFile && <p>Selected file: {selectedFile.file?.name}</p>}
       
       <button
         onClick={() => {
             if (selectedFile) {
-              sendMessage(selectedFile);
+              sendMessage(sender_id, receiver_id, message_type, selectedFile);
               handleClose();
             }
           }}

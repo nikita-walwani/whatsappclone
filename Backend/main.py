@@ -52,6 +52,8 @@ else:
 base_dir = os.path.dirname(os.path.realpath(__file__))
 static_dir = os.path.join(base_dir, static_folder_name)
 
+media_dir = Path(__file__).resolve().parent /"sqlite_database"/ "media"
+app.mount("/media", StaticFiles(directory=str(media_dir)), name="media")
 
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
@@ -313,7 +315,7 @@ async def get_messages(userId: str, token: str = Depends(oauth2)):
     query = """
         SELECT 
             cm.id, cm.sender_id, cm.receiver_id, cm.message, cm.status, cm.timestamp, cm.media_id,
-            m.file_path, cm.message_type
+            m.file_path, cm.message_type, m.file_type
         FROM chat_messages cm
         LEFT JOIN media m ON cm.media_id = m.id
          WHERE cm.sender_id = ? OR cm.receiver_id = ?
@@ -326,7 +328,7 @@ async def get_messages(userId: str, token: str = Depends(oauth2)):
             async for row in cursor:
                 raw_file_path = row[7]  # media.file_path
                 file_url = raw_file_path if raw_file_path else None  # m.file_path
-
+                file_type = row[9] or "unknown"
 
                 messages.append(Message(
                     id=row[0],
@@ -336,10 +338,12 @@ async def get_messages(userId: str, token: str = Depends(oauth2)):
                     status=row[4],
                     timestamp=row[5],
                     file_path=file_url,
-                    message_type=row[8]
+                    message_type=row[8],
+                    mime=file_type,
+                    
                 ))
 
-    return {"user_id": userId, "messages": [msg.dict() for msg in messages]}
+    return {"user_id": userId, "messages": [msg for msg in messages]}
 
  
 user_connections = {}
@@ -443,8 +447,7 @@ async def track_user_actions(websocket:WebSocket):
                                     await connected_users_list[receiver_id].send_json(update_status)
                 
             if parsed_data["action"] == 'chatopened':
-                receiver_id = parsed_data["receiver_id"] 
-                
+                receiver_id = parsed_data["receiver_id"]
                 if  parsed_data["is_chat_active"] == True:   
     
                     message_data = create_message_data(user_id, receiver_id, parsed_data)
@@ -455,8 +458,9 @@ async def track_user_actions(websocket:WebSocket):
                             message_data["status"] = "delivered"
                         await connected_users_list[receiver_id].send_json(message_data)
                         
-                    chat_id = await save_message_to_db(message_data) 
-                    message_data["chat_id"]= chat_id    
+                    chat_id, file_path = await save_message_to_db(message_data) 
+                    message_data["chat_id"]= chat_id   
+                    message_data["file"]= file_path    
                     await connected_users_list[user_id].send_json(message_data)
                     
                 if  parsed_data["is_chat_active"] == False:

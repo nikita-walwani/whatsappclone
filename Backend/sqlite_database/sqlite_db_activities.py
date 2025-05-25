@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime, timezone
 
 from sqlalchemy import update
@@ -7,25 +8,28 @@ import uuid
 from pathlib import Path
 
 # Ensure media directory exists
-MEDIA_DIR = Path(__file__).resolve().parent / "media"
+MEDIA_DIR =  Path(__file__).resolve().parent / "media"
 MEDIA_DIR.mkdir(exist_ok=True)
 
 async def save_message_to_db(message_data: dict):
     async with SessionLocal() as session:
         media_id = None
+        relative_path =None
         if message_data["message_type"] == "file":
             file_bytes = message_data.get("file")
             mime_type = message_data.get("mime")
             original_name = message_data.get("filename")
 
             # Generate a unique file name
+            
             unique_filename = f"{uuid.uuid4()}_{original_name}"
+            relative_path  = f"/media/{unique_filename}"
             file_path = MEDIA_DIR / unique_filename
 
             # Save file bytes to disk
             try:
                 if isinstance(file_bytes, str):
-                    file_bytes = file_bytes.encode("utf-8")  # or handle base64 if needed
+                    file_bytes = base64.b64decode(file_bytes) 
 
                 with open(file_path, "wb") as f:
                     f.write(file_bytes)
@@ -37,13 +41,13 @@ async def save_message_to_db(message_data: dict):
             media_record = Media(
                 file_name=original_name,
                 file_type=mime_type,
-                file_path=str(file_path),
+                file_path=str(relative_path),
                 uploaded_at=datetime.now(timezone.utc)
             )
             session.add(media_record)
             await session.flush()  # Get auto-generated `id`
             media_id = media_record.id
-            
+            print(str(file_path))
 
         # Save chat message
         chat_msg = ChatMessage(
@@ -55,12 +59,12 @@ async def save_message_to_db(message_data: dict):
             media_id=media_id,
             message_type=message_data["message_type"]
         )
+        
 
         session.add(chat_msg)
         await session.flush()
         await session.commit()
-        return chat_msg.id if chat_msg.id else None
-
+        return chat_msg.id, (relative_path or None)
        
 
 async def update_message_statuses(message_ids: list[int], new_status: str):

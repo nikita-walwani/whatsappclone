@@ -11,5 +11,9 @@ def create_message_data(user_id, receiver_id, parsed_data):
     }
     if parsed_data["data"]["type"] == "text":
         message_data["message"] = parsed_data["data"]["message"]
+    if parsed_data["data"]["type"] == "file":
+        message_data["file"] = parsed_data["data"]["byte"]
+        message_data["filename"] = parsed_data["data"]["filname"]
+        message_data["mime"] = parsed_data["data"]["mime"]
     return message_data
 

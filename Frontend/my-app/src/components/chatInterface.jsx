@@ -18,6 +18,7 @@ import {processUsersWithMessages} from '../common_processing/common_processing';
 import { BsCheck, BsCheckAll } from 'react-icons/bs';
 import {updateUserWithLastMessage} from "../common_processing/common_processing"
 import { updateMessageInChatHistory } from "../common_processing/common_processing";
+import { FaFileImage, FaFileAlt } from 'react-icons/fa';
 
 const API_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
@@ -52,7 +53,7 @@ export default function Chat(){
     const [isUserListConatiner, setUserListContainer] = useState(true)
     const [chatHistory, setChatHistory]=useState([])
     const [showProfile, setShowUserProfile] = useState(false)
-    
+    const containerRef = useRef(null);
     let temp_chat_list = chatHistory
 
     const toggleMenuItemsForMobile=()=>{
@@ -227,9 +228,24 @@ export default function Chat(){
     };
 
     // websocket functions
-    
+    const convertFileToBase64 = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64String = reader.result.split(',')[1]; 
+          resolve(base64String);
+        };
+        reader.onerror = (error) => reject(error);
+      });
+    };
     const sendChatOpenedAction=(sender_id, receiver_id)=>
     {   
+        
+        const container = containerRef.current;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
         if (socket.current && socket.current.readyState === WebSocket.OPEN){
         const messages_id = temp_chat_list
             .filter(msg =>
@@ -256,28 +272,53 @@ export default function Chat(){
       }
     }
 
-    const sendChatOpenedActionWithMessage=(sender_id, receiver_id, message_type)=>
+    const sendChatOpenedActionWithMessage = async (sender_id, receiver_id, message_type, file_data)=>
     {
+        
+        var socket_message;
         if (socket.current && socket.current.readyState === WebSocket.OPEN){
-        const socket_message = {
-          "action" :"chatopened",
-          "is_chat_active":true,
-          "user_id":sender_id,
-          "receiver_id":receiver_id,
-          "data":{
-            "type":message_type
             
-          }
-         }
+        
          if (message_type=="text"){
+              socket_message = {
+              "action" :"chatopened",
+              "is_chat_active":true,
+              "user_id":sender_id,
+              "receiver_id":receiver_id,
+              "data":{
+                "type":message_type
+                
+              }
+            }
           const message = inputRef.current.value.trim();
           if (message === "") {
             setSendButton(false);
             return; // Don't send empty messages
           }
           socket_message["data"]["message"]= message
+          
           }
+        
+         if (message_type =="file"){
+           if(file_data){
+           const base64File = await convertFileToBase64(file_data.file);         
+           socket_message = {
+            "action" :"chatopened",
+            "is_chat_active":true,
+            "user_id":sender_id,
+            "receiver_id":receiver_id,
+            "data":{
+            "type":"file",
+            "byte":base64File,
+            "mime":file_data.mime,
+            "filname": file_data.filename
+         }
+        }
+       }
+        }
+        console.log(socket_message)
         socket.current.send(JSON.stringify(socket_message));
+        
         inputRef.current.value = "";
         }
         else {
@@ -370,9 +411,16 @@ export default function Chat(){
                     setTimeout(() => {
                       
                     
-                    const data = JSON.parse(event.data);
+                    let data = JSON.parse(event.data);
                     if ("message_type" in data) {
                       // Add new message to chat history
+                      if(data.message_type === "file"){
+                          const base64String = data.file; // The base64 data without "data:image/jpeg;base64,"
+                          const mime = data.mime;         // e.g. "image/jpeg"
+                          const filename = data.filename;
+                          const imgSrc = `${base64String}`;
+                          data = { ...data, file_path: imgSrc };
+                      }
                       setChatHistory(prev => {
                         const newChatHistory = [...prev, data];
                         temp_chat_list = newChatHistory;  // keep temp_chat_list in sync with React state
@@ -381,13 +429,12 @@ export default function Chat(){
                     }
  
                     const messages_id = (data.update_status || []).filter(id => id != null);
-                    console.log('enreeeddddd')
+                   
                     if (messages_id.length > 0){
-                      console.log('wnsas')
+                      
                       setChatHistory(prev => {
                         const updatedChatHistory = updateMessageInChatHistory(prev, messages_id, currentUserRef.id, selectedUser.id);
                         temp_chat_list = updatedChatHistory;
-                        console.log("sas",updatedChatHistory)
                         return updatedChatHistory;
                         
                       });
@@ -433,8 +480,7 @@ export default function Chat(){
       };
     }, []);
     
-    // console.log("chat",chatHistory)``
-    // console.log("temp",temp_chat_list)
+   
     return(
     
         <div className="chat-screen-main">
@@ -520,12 +566,32 @@ export default function Chat(){
                             </div>
                             <div className="user-detail">
                             <p>{user.username}</p>
-                            <div>
+                            <div style={{display:"flex"}}>
                             {user.last_message?.sender_id===currentUserRef.id && (
-                                 <span className="last-media" >You: </span>
+                                 <span className="last-media" >You :  </span>
                             )}
+                             {user.last_message?.message_type === "text" && (
                             <span className="last-media">{
                             user.last_message?.message || ''}</span>
+                             )}
+                              {user.last_message?.message_type === "file" && !user.last_message?.mime.startsWith("image/") && (
+                              
+                                <div>
+
+                                <FaFileAlt size={13} style={{ color: 'var(--third-color', fontSize:"12px"}} />
+                                <span style={{ color: 'var(--third-color'}}> document</span>
+                                </div>
+                                
+                             )}
+                             {user.last_message?.message_type === "file" && user.last_message?.mime.startsWith("image/") && (
+                              
+                               <div>
+
+                                <FaFileImage size={13} style={{ color: 'var(--third-color', fontSize:"12px"}} />
+                                <span style={{ color: 'var(--third-color'}}> Image</span>
+                                </div>
+                             )}
+                           
                             {user.count >0 &&(
                             <div className="unread-message-count">
                               <p>{user.count}</p>
@@ -636,7 +702,7 @@ export default function Chat(){
               
             {chatHistory.length > 0 && (
               
-              <ul  className="chats-text">
+              <ul  className="chats-text" ref={containerRef}>
               {[...chatHistory]
                 .filter(messages => (messages.receiver_id === currentUserRef.id && messages.sender_id===selectedUser.id) || (messages.receiver_id === selectedUser.id && messages.sender_id===currentUserRef.id))
                 .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)) // ✅ Old to new
@@ -653,25 +719,30 @@ export default function Chat(){
                   )}
 
                       {UserMessage.message_type === 'file' && (
+                        
                         <>
                           {getMediaCategoryFromMime(UserMessage.mime) === 'video' ? (
                             <li className="fileMessage" key={index}>
                               <video width="100%" height="auto" controls>
-                                <source src={UserMessage.file} type={UserMessage.mime} />
+                                <source src={UserMessage.file_path} type={UserMessage.mime} />
                                 Your browser does not support the video tag.
                               </video>
                             </li>
+                            
                           ) : getMediaCategoryFromMime(UserMessage.mime) === 'image' ? (
                             <li className="fileMessage" key={index}>
-                              <img src={UserMessage.file} alt="Sent file" className="chat-image-size"/>
-                            </li>
+                              
+                              <img src={`${API_URL}${encodeURI(UserMessage.file_path)}`} alt="Sent file" className="chat-image-size"/>
+                              
+                            </li> 
                           ) : getMediaCategoryFromMime(UserMessage.mime) === 'doc' ? (
                             <li className="fileMessage" key={index}>
-                              <a href={UserMessage.file} 
-                              download={UserMessage.filename} 
-                              target="_blank" rel="noopener noreferrer">
-                                📄{UserMessage.filename}
-                              </a>
+                              <embed 
+                                src={`${API_URL}${encodeURI(UserMessage.file_path)}`} 
+                                type={UserMessage.mime}
+                                width="300" 
+                                height="100" 
+                              />
                             </li>
                           ) : (
                             <li className="fileMessage" key={index}>
@@ -693,7 +764,11 @@ export default function Chat(){
             <div className="message-input">
               <button onClick={showSendMediaOnclick}><i className="fas fa-plus"></i></button>
               {showSendMedia && (
-                <SendMedia sendMessage={setMessages}  handleClose={closeSendMediaOnclick}/>
+                <SendMedia sendMessage={sendChatOpenedActionWithMessage}  handleClose={closeSendMediaOnclick}
+                sender_id={currentUserRef.id}      // <-- pass sender id here
+                receiver_id={selectedUser.id}
+                message_type = "file"
+                />
               )}
                   <input className="message-area" ref={inputRef} placeholder="Type a message" onChange={handleInputMessage} value={inputText} onKeyDown={(e) => {
                         if (e.key === "Enter") {

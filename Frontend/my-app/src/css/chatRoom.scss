@@ -362,6 +362,12 @@ ul.chats-text div{
     
     
 }
+.fileMessage embed
+     {
+    margin: 5px;
+    border-radius: 5px;
+}
+
 // media query
 // Extra small (xs): < $sm
 @media (max-width: #{ $sm - 1px }) {

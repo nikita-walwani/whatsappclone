@@ -22,6 +22,8 @@ class Message(BaseModel):
     timestamp: datetime
     file_path: Optional[str] = None
     message_type:str
+    mime:str = None
+    
  
 class MessageStatusUpdate(BaseModel):
     id: int
