@@ -14,3 +14,4 @@ passlib==1.7.4
 email_validator==2.2.0
 python-dotenv==1.0.1
 pymongo==4.9.0
+**aiosqlite==0.20.0**

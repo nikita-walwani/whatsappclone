@@ -478,7 +478,7 @@ export default function Chat(){
       return () => {
         controller.abort();
       };
-    }, []);
+    },[]);
     
    
     return(
